@@ -30,7 +30,7 @@ public class Proyecto1 {
             System.out.println("6. Ver datos del estudiante");
             System.out.println("7. Bitacora");
             System.out.println("8. Salir");
-            System.out.print("Seleccione una opción: ");
+            System.out.print("Seleccione una opcion: ");
             
             try{
                 opcion = Integer.parseInt(entrada.nextLine());
@@ -51,13 +51,13 @@ public class Proyecto1 {
                         generarReporte();
                         break;
                     case 6:
-                        verDatos();
+                        verDatosEstudiante();
                         break;
                     case 7:
                         bitacora();
                         break;
                     case 8:
-                        salir();
+                        System.out.println("Saliste del menu principal");;
                         break;
                     default :
                         System.out.println("OPCION INVALIDA, DIGITE UN NUMERO DEL MENU");
@@ -72,6 +72,7 @@ public class Proyecto1 {
     public static void agregarProducto(){ 
        //El codigo verifica que no se haya excedido el numero de articulos
        //si el codigo no ha excedido el numero de produtos, no recorrera este bloque
+       Scanner entrada = new Scanner(System.in);
        
        if (totalProductos >= elementosMax){
            System.out.println("Llego al limite de compra, por favor haga una nueva compra");
@@ -82,9 +83,9 @@ public class Proyecto1 {
        
        //Pedir el codigo de un articulo 
        boolean codigoUnico = false;
-       int contador = 0;
-       double precio;
+       int contador = 0, stockNuevo;
        String nuevoCodigo, categoria;
+       float precioNuevo;
        
        do{
        System.out.println("Ingrese el codigo del articulo: ");
@@ -111,7 +112,7 @@ public class Proyecto1 {
             return;
         }
         
-        
+        //Añadir compra 
         System.out.println("Que desea comprar: \nPantalones:\n, \nPlayeras:\n, \nCalcetines:\n, \nRopa interior:\n, \nSueteres:\n, \nGorras:\n ");
         categoria = entrada.nextLine().trim();
         
@@ -120,16 +121,125 @@ public class Proyecto1 {
                 contador++;
             }
         }
+        //Para que la compra sea más dinámica solo se permitirá comprar 5 cosas de cada categoría
         if (contador >= 5){
             System.out.println("Solo puedes escoger 5 productos de cada categoria"+categoria);
             return;
         }
        
-
- 
+        System.out.println("Precio: ");
+        String precios = entrada.nextLine().trim();
+        try{
+            precioNuevo = Float.parseFloat(precios);
+            if(precioNuevo < 0){
+                System.out.println("El precio no puede ser negativo");
+                return;
+            }
+        }catch (NumberFormatException e){
+            System.out.println("Error: digite un precio valido");
+            return;
+        }
+        
+        System.out.print("Stock: ");
+        String stockStr = entrada.nextLine().trim();
+         try{
+        stockNuevo = Integer.parseInt(stockStr);
+        if (stockNuevo < 0){
+            System.out.println("El stock tiene que ser un valor positivo, corríjalo por favor.");
+            return;
+        }
+        }catch (NumberFormatException e){
+        System.out.println("Stock inválido.");
+        return;
+        
+        }
+        codigo[totalProductos] = nuevoCodigo;
+        nombres[totalProductos] = nombre;
+        categorias[totalProductos] = categoria;
+        precio[totalProductos] = precioNuevo;
+        stocks[totalProductos] = stockNuevo;
+        totalProductos++;
+        
+        System.out.println("Listo! su producto fue agreagado a la compra");
+        
+        
+        
         
     }
     
+    public static void buscarProducto(){
+          
+         System.out.println("¿Que desea buscar?: ");
+         String dato = entrada.nextLine().trim();
+         
+         boolean encontrado = false;
+         int indice = -1;
+         
+         for(int i=0; i<totalProductos; i++){
+             if(categorias[i] != null && categorias[i].equalsIgnoreCase(dato)){
+                 encontrado = true;
+                 indice = i;
+                 break;
+             }
+         }
+         
+         if(!encontrado){
+             System.out.println("No se encontro su producto, intente de nuevo.");
+         } else{
+             System.out.println("Genial! su articulo fue encontrado:");
+             System.out.println("1. Codigo: "+codigo[indice]);
+             System.out.println("2. Codigo: "+nombres[indice]);
+             System.out.println("3. Codigo: "+categorias[indice]);
+             System.out.println("4. Codigo: "+precio[indice]);
+             System.out.println("5. Codigo: "+stocks[indice]);
+         }     
+    }
+    
+    public static void eliminarProducto(){
+        System.out.println("Para eliminar un producto necesita ingresar el código: ");
+        String eliminarCodigo = entrada.nextLine().trim();
+        
+        int indice = -1;
+        
+        for(int i=0; i<totalProductos; i++){
+             if(categorias[i] != null && codigo[i].equalsIgnoreCase(eliminarCodigo)){
+                 indice = i;
+                 break; //Para eliminar el codigo primero debemos buscarlo dentro de nuestro arreglo usando un for
+             }
+        }
+        if(indice == -1){
+            System.out.println("No hay ningun producto con este codigo: "+eliminarCodigo);
+            return;
+        } 
+        for(int i=indice; i<totalProductos-1; i++){
+            codigo[i] = codigo[i+1];
+            nombres[i] = nombres[i+1];
+            categorias[i] = categorias[i+1];
+            precio[i] = precio[i+1];
+            stocks[i] = stocks[i+1]; //De este modo vaciamos el espacio de nuestro vector
+        }
+        
+        totalProductos--;
+        System.out.println("Se elimino el producto de su compra.");
+    }
+    
+    public static void registrarVenta(){
+        
+    }
+    
+    public static void generarReporte(){
+        
+    }
+    
+    public static void verDatosEstudiante(){
+        System.out.println("Nombre: Juan Jose María González Tuch");
+        System.out.println("Carnet: 202300700");
+        System.out.println("Proyecto 1 IPC1");
+    }
+ 
+    public static void bitacora(){
+        
+    }
     
     
 }   
