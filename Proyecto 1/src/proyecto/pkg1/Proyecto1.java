@@ -1,17 +1,29 @@
 
 package proyecto.pkg1;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class Proyecto1 {
     
     static int elementosMax = 100;
+    static int bitacoraMax = 200;
     static String codigo [] = new String [elementosMax];
     static String nombres [] = new String [elementosMax];
     static String categorias [] = new String[elementosMax]; 
     static float precio [] = new float [elementosMax];
     static int stocks [] = new int [elementosMax];
+    static String  accionesBitacora [] = new String[bitacoraMax];
     static int totalProductos = 0;
+    static int totalBitacora = 0;
     
     static Scanner entrada = new Scanner(System.in);
     
@@ -224,21 +236,104 @@ public class Proyecto1 {
     }
     
     public static void registrarVenta(){
+        System.out.println("Ingrese el código del producto para registrar la venta: ");
+        String codProducto = entrada.nextLine().trim();
+        int posicion = -1;
+        for(int i=0; i<totalProductos; i++){
+            if(codigo[i].equalsIgnoreCase(codProducto)){
+                posicion = 1;
+                break;
+            }
+        }
+        if(posicion == -1){
+            System.out.println("No existe ningun producto con este codigo");
+            return;
+        }
         
+        boolean validarCantidad = false;
+        do{
+            System.out.println("Ingrese la cantidad vendida: ");
+            int cantVenta = Integer.parseInt(entrada.nextLine());
+            if(cantVenta <= 0){
+            System.out.println("Necesita ingresar un valor positivo");
+        }else if(cantVenta > totalProductos){
+                System.out.println("La venta supera a la cantidad de los productos disponibles");
+                
+                totalProductos -= cantVenta;
+                int totalVenta = (int)(cantVenta*precio[posicion]);
+                
+                System.out.println("La venta total es de :"+totalVenta);
+                System.out.println("Venta Registrada de manera exitosa");
+                System.out.println("Producto: "+nombres[posicion]);
+                System.out.println("Total vendido: "+totalVenta);
+                System.out.println("Stocks: "+stocks[posicion]);
+                validarCantidad = true;      
+        }
+            
+        }while(!validarCantidad);
+        
+    }
+    
+    private static void generarReporteStocPDF(){
+       PDDocument documento = new PDDocument();
+       PDPage pagina = new PDPage(PDRectangle.LETTER);
+       documento.addPage(pagina);
+       
+       try(PDPageContentStram entrada = new PDPageContentStram(documento,pagina)){
+           
+       }
+       
+       
+       
     }
     
     public static void generarReporte(){
         
+        try{
+            String fechas = LocalDateTime.now().format(DateTimeFormatter.ofPattern("DD_MM_YYYY_HH_mm_ss"));
+            String stockArchivos = fechas + ". Archivo de Stock.pdf";
+            String ventasArchivos = fechas + ". Archivo de venta.pdf";
+        
+            generarReporteStockPDF(stockArchivos);
+            generarReporteVentasPDF(ventasArchivos);
+            
+            System.out.println("Se genero el reporte exitosamente");
+            System.out.println(" " +stockArchivos);
+            System.out.println(" " +ventasArchivos);
+        }catch (Exception e){
+            System.out.println(" No se pudo generar el reporte: "+e.getMessage());
+            
+        }
     }
-    
+        
     public static void verDatosEstudiante(){
         System.out.println("Nombre: Juan Jose María González Tuch");
         System.out.println("Carnet: 202300700");
         System.out.println("Proyecto 1 IPC1");
     }
  
-    public static void bitacora(){
+    public static void registrarAccion(String tipoAccion, boolean correcta, String usuario){
+        if (totalBitacora >= bitacoraMax){
+            System.out.println("Las acciones de la bitacora llegaron a su limite");
+            return;
+        }
+        String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String modo = correcta? "Correcto" : " Error ";
+        String inicio = String.format("|=======Accion:=======|=======Modo:=======|=======Usuario: =======|", fecha, tipoAccion, modo, usuario);
         
+        accionesBitacora[totalBitacora] = inicio;
+        totalBitacora++;
+    }
+    
+    public static void bitacora(){
+        System.out.println("Bitacora");
+        if (totalBitacora == 0){
+            System.out.println("Digite una opcion valida");
+        }else{
+            for(int i=0; i<totalBitacora; i++){
+            System.out.println(accionesBitacora[i]);
+            }
+        }
     }
     
     
