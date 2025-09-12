@@ -1,11 +1,16 @@
-
 package proyecto.pkg1;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPCell;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -273,38 +278,119 @@ public class Proyecto1 {
         }while(!validarCantidad);
         
     }
-    
-    private static void generarReporteStocPDF(){
-       PDDocument documento = new PDDocument();
-       PDPage pagina = new PDPage(PDRectangle.LETTER);
-       documento.addPage(pagina);
-       
-       try(PDPageContentStram entrada = new PDPageContentStram(documento,pagina)){
-           
-       }
-       
-       
-       
-    }
+
     
     public static void generarReporte(){
-        
         try{
-            String fechas = LocalDateTime.now().format(DateTimeFormatter.ofPattern("DD_MM_YYYY_HH_mm_ss"));
-            String stockArchivos = fechas + ". Archivo de Stock.pdf";
-            String ventasArchivos = fechas + ". Archivo de venta.pdf";
-        
-            generarReporteStockPDF(stockArchivos);
-            generarReporteVentasPDF(ventasArchivos);
+            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd_MM_yyyy_HH_mm_ss"));
+            String stockArchivo = fecha +". Stock.pdf";
+            String ventaArchivo = fecha +". Venta.pdf";
             
-            System.out.println("Se genero el reporte exitosamente");
-            System.out.println(" " +stockArchivos);
-            System.out.println(" " +ventasArchivos);
-        }catch (Exception e){
-            System.out.println(" No se pudo generar el reporte: "+e.getMessage());
+            generarReporteStockPDF(stockArchivo);
+            generarReporteVentasPDF(ventaArchivo);
             
+            System.out.println("Reportes: ");
+            System.out.println(" " +stockArchivo);
+            System.out.println(" " +ventaArchivo);
+            
+        }catch(Exception e){
+            System.out.println("Error al generar el reporte"+e.getMessage());   
         }
+
     }
+    
+   private static void generarReporteStockPDF(String nombArchivo) throws IOException, DocumentException {
+       Document documento = new Document(PageSize.LETTER, 36,36,36,36);
+       PdfWriter.getInstance(documento, new java.io.FileOutputStream(nombArchivo));
+       
+       documento.open();
+       
+       Paragraph titulo = new Paragraph("Estos son los reportes generados para Stock", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16));
+       documento.add(titulo);
+       documento.add(new Paragraph(" "));
+       
+       PdfPTable tablapdf = new PdfPTable(5);
+       tablapdf.setWidthPercentage(100);
+       tablapdf.setWidths(new float []{28f,20f,22f,15f,15f,});
+   
+       addHeader(tablapdf, "Nombre :");
+       addHeader(tablapdf, "Codigo :");
+       addHeader(tablapdf, "Categoria :");
+       addHeader(tablapdf, "Precio : ");
+       addHeader(tablapdf, "Stock :");
+       
+       Font fFila = FontFactory.getFont(FontFactory.COURIER, 10);
+       for (int i = 0; i<totalProductos; i++){
+           
+           tablapdf.addCell(new Phrase(safe(nombres[i]), fFila));
+           tablapdf.addCell(new Phrase(safe(codigo[i]), fFila));
+           tablapdf.addCell(new Phrase(safe(categorias[i]), fFila));
+           tablapdf.addCell(new Phrase(String.format("%.2f", precio [i]), fFila));
+           tablapdf.addCell(new Phrase(String.valueOf(stocks[i]), fFila));
+       }   
+       
+       documento.add(tablapdf);
+       documento.close();
+   }
+   
+   private static void generarReporteVentasPDF(String nomArchivo) throws IOException, DocumentException {
+       Document documento = new Document(PageSize.LETTER, 36,36,36,36);
+       PdfWriter.getInstance(documento, new java.io.FileOutputStream(nomArchivo));
+       documento.open();
+       
+       Paragraph tituloDoc = new Paragraph(" Reporte de ventas ", FontFactory.getFont(FontFactory.HELVETICA_BOLD,16));
+       tituloDoc.setAlignment(Element.ALIGN_LEFT);
+       documento.add(tituloDoc);
+       documento.add(new Paragraph(" "));
+       
+       PdfPTable tabla2 = new PdfPTable(5);
+       tabla2.setWidthPercentage(100);
+       tabla2.setWidths(new float[]{20f,28f,10f,18f,24f});
+       
+       addHeader(tabla2, " Nombre: ");
+       addHeader(tabla2, " Codigo: ");
+       addHeader(tabla2, " Cantidad total: ");
+       addHeader(tabla2, " Total (en quetzalez): ");
+       addHeader(tabla2, " Fecha y hora: ");
+       
+       Font fFila = FontFactory.getFont(FontFactory.COURIER, 10);
+       File f = new File("Reporte de ventas.txt");
+       if (!f.exists()){           
+           documento.add(new Paragraph("ERROR: NO SE REGISTRO NINGUNA VENTA",FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 11)));
+           return;       
+       }
+       float totalGeneral = 0f;
+       
+       try(BufferedReader lectura = new BufferedReader(new FileReader(f))){
+           String linea;
+           while((linea =lectura.readLine()) !=null){
+               String[] p = linea.split(" ");
+               if (p.length < 6) continue;
+               
+               String codigoProd = p[0];
+               String nomProd = p[1];
+               String cantProd = p[2];
+               String totalConsumo = p[4];
+               String fechaCompra = p[5];
+               
+               try {
+                   totalGeneral += Float.parseFloat(totalConsumo);
+               }catch (NumberFormatException ignore) {}
+               
+               tabla2.addCell(new Phrase(safe(codigoProd), fFila));
+               tabla2.addCell(new Phrase(safe(nomProd), fFila));
+               tabla2.addCell(new Phrase(safe(cantProd), fFila));
+               tabla2.addCell(new Phrase(safe(totalConsumo), fFila));
+               tabla2.addCell(new Phrase(safe(fechaCompra), fFila));
+               
+           }
+       }
+       
+       documento.add(tabla2);
+       documento.add(new Paragraph(" - "));
+       documento.add(new Paragraph("EL total de la compra es: " + String.format("%.2f", totalGeneral), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+       
+   }
         
     public static void verDatosEstudiante(){
         System.out.println("Nombre: Juan Jose María González Tuch");
@@ -335,6 +421,16 @@ public class Proyecto1 {
             }
         }
     }
+
+    private static void addHeader(PdfPTable tabla, String txt) {
+        Font f = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+        PdfPCell sc = new PdfPCell(new Phrase(txt, f));
+        sc.setHorizontalAlignment(Element.ALIGN_CENTER);
+        tabla.addCell(sc);
+    }
+
+    private static String safe(String datosfinales) { return (datosfinales == null) ? "" : datosfinales; }
+      
     
     
 }   
