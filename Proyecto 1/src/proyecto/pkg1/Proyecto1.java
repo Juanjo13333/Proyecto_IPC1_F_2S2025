@@ -98,7 +98,7 @@ public class Proyecto1 {
        
        System.out.println("Agregue un producto a su compra :)");
        
-       //Pedir el codigo de un articulo 
+       
        boolean codigoUnico = false;
        int contador = 0, stockNuevo;
        String nuevoCodigo, categoria;
@@ -111,13 +111,12 @@ public class Proyecto1 {
            System.out.println("Error: el codigo esta vacio, por favor digite un codigo valido");
        }
        
-       //Validar que el codigo sea unico
        codigoUnico = true;
        for(int i = 0; i <totalProductos; i++){
            if(codigo[i] != null && codigo[i].equalsIgnoreCase(nuevoCodigo))
                System.out.println("Error: este codigo ya existe");
            codigoUnico = false;
-           break;
+           return;
        } 
        }while(!codigoUnico);
        
@@ -205,10 +204,10 @@ public class Proyecto1 {
          } else{
              System.out.println("Genial! su articulo fue encontrado:");
              System.out.println("1. Codigo: "+codigo[indice]);
-             System.out.println("2. Codigo: "+nombres[indice]);
-             System.out.println("3. Codigo: "+categorias[indice]);
-             System.out.println("4. Codigo: "+precio[indice]);
-             System.out.println("5. Codigo: "+stocks[indice]);
+             System.out.println("2. Producto: "+nombres[indice]);
+             System.out.println("3. Categoria: "+categorias[indice]);
+             System.out.println("4. Precio: "+precio[indice]);
+             System.out.println("5. Stock: "+stocks[indice]);
          }     
     }
     
@@ -430,7 +429,5 @@ public class Proyecto1 {
     }
 
     private static String safe(String datosfinales) { return (datosfinales == null) ? "" : datosfinales; }
-      
-    
-    
+  
 }   
